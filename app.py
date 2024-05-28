@@ -65,6 +65,12 @@ def main():
     if "web_search_enabled" not in st.session_state:
         st.session_state.web_search_enabled = False
 
+    if "quiz_topic" not in st.session_state:
+        st.session_state.quiz_topic = None
+
+    if "pdfs_key" not in st.session_state:
+        st.session_state.pdfs_key = 0
+
     if 'authenticated' not in st.session_state:
         cookie_manager = get_manager()
         session_cookie = cookie_manager.get(COOKIE_NAME)
@@ -124,6 +130,13 @@ def show_register():
                 st.error(response.get("error", "Registration failed"))
 
 
+def get_quiz_title(titles: list, current_title: str):
+    if titles.count(current_title) > 1:
+        count = titles.count(current_title)
+        current_title = current_title + f" #{count}"
+    return "###### " + current_title
+
+
 def show_quiz_generation():
     with st.sidebar:
         new_conv = st.button("Start New Conversation")
@@ -132,27 +145,39 @@ def show_quiz_generation():
             st.session_state.web_search_enabled = False
             st.session_state.pop("conversation_id", None)
             st.session_state.pop("messages", None)
+            st.session_state.pdfs_key += 1
+            st.session_state.quiz_topic = ""
+
         with st.expander("Conversation History"):
             with st.container(height=180):
                 if st.session_state.get("conversations"):
                     titles = []
                     for conv in st.session_state.conversations:
-                        if isinstance(conv, dict) and 'conversation_id' in conv:
-                            title = f'###### {conv["messages"][0]["content"][:70]}'
-                            if title in titles:
-                                title += "#2"
-                            else:
-                                titles.append(title)
-                            if st.button(title):
-                                st.session_state.conversations = get_conversations()
-                                st.session_state.conversation_id = conv["conversation_id"]
-                                st.session_state.messages = conv['messages']
-                                if conv["conversation_type"] == "web":
-                                    st.session_state.web_search_enabled = True
+                        topic = conv["messages"][0]["quiz_topic"]
+                        title = f"Topic: {topic}; " + \
+                            conv["messages"][0]["content"][:70].strip()
+                        titles.append(title)
 
-        quiz_topic = st.text_input("Enter the topic of the quiz:")
+                    for conv in st.session_state.conversations:
+                        topic = conv["messages"][0]["quiz_topic"]
+                        title = f"Topic: {topic}; " + \
+                            conv["messages"][0]["content"][:70].strip()
+                        edited_title = get_quiz_title(titles, title)
+                        if title in titles:
+                            titles.remove(title)
+                        if st.button(edited_title):
+                            st.session_state.conversations = get_conversations()
+                            st.session_state.conversation_id = conv["conversation_id"]
+                            st.session_state.messages = conv['messages']
+                            st.session_state.quiz_topic = conv["messages"][0]["quiz_topic"]
+                            st.session_state.pdfs_key += 1
+                            if conv["conversation_type"] == "web":
+                                st.session_state.web_search_enabled = True
+
+        quiz_topic = st.text_input(
+            "Enter the topic of the quiz:", value=st.session_state.quiz_topic)
         pdfs = st.file_uploader("Upload PDFs here", type=[
-            "pdf"], accept_multiple_files=True)
+            "pdf"], accept_multiple_files=True, key=st.session_state.pdfs_key)
         st.markdown("**or**")
         web_search_enabled = st.checkbox(
             "Enable Web Search", value=st.session_state.web_search_enabled)
@@ -187,9 +212,8 @@ def show_quiz_generation():
     if prompt:
         if not quiz_topic:
             st.error("Please enter the topic of the quiz")
-            return
         else:
-            prompt = f"{prompt}\n\nTopic: {quiz_topic}"
+            prompt = f"{prompt}. Topic: {quiz_topic}"
             prompt_display = prompt.split("Topic")[0]
             st.session_state.messages.append(
                 {"role": "user", "content": prompt_display})
