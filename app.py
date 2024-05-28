@@ -159,6 +159,7 @@ def show_quiz_generation():
         if st.button("Logout"):
             st.session_state.clear()
             cookie_manager = get_manager()
+            cookie_manager.get_all()
             try:
                 cookie_manager.delete(COOKIE_NAME)
             except:
