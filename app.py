@@ -157,11 +157,11 @@ def show_quiz_generation():
             "Enable Web Search", value=st.session_state.web_search_enabled)
 
         if st.button("Logout"):
-            st.session_state.clear()
             cookie_manager = get_manager()
             print(cookie_manager.get_all())
             try:
                 cookie_manager.delete(COOKIE_NAME)
+                st.session_state.clear()
             except Exception as e:
                 print(e)
             st.rerun()
