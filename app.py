@@ -152,7 +152,6 @@ def show_quiz_generation():
                             if conv["conversation_type"] == "web":
                                 st.session_state.web_search_enabled = True
 
-        st.text("")
         pdfs = st.file_uploader("Upload PDFs here", type=[
             "pdf"], accept_multiple_files=True)
         st.markdown("**or**")
