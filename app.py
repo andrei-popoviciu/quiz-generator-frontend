@@ -68,7 +68,7 @@ def main():
     if 'authenticated' not in st.session_state:
         cookie_manager = get_manager()
         session_cookie = cookie_manager.get(COOKIE_NAME)
-        time.sleep(2)
+        time.sleep(1)
         print(cookie_manager.get_all())
         if session_cookie:
             st.session_state.authenticated = True
@@ -126,36 +126,39 @@ def show_register():
 
 def show_quiz_generation():
     with st.sidebar:
-        new_conv = st.button("###### Start New Conversation")
+        new_conv = st.button("Start New Conversation")
         if new_conv:
             st.session_state.conversations = get_conversations()
             st.session_state.web_search_enabled = False
             st.session_state.pop("conversation_id", None)
             st.session_state.pop("messages", None)
-        st.text("Conversation History")
-        with st.container(height=180):
-            if st.session_state.get("conversations"):
-                titles = []
-                for conv in st.session_state.conversations:
-                    if isinstance(conv, dict) and 'conversation_id' in conv:
-                        title = f'###### {conv["messages"][0]["content"][:70]}'
-                        if title in titles:
-                            title += "#2"
-                        else:
-                            titles.append(title)
-                        if st.button(title):
-                            st.session_state.conversations = get_conversations()
-                            st.session_state.conversation_id = conv["conversation_id"]
-                            st.session_state.messages = conv['messages']
-                            if conv["conversation_type"] == "web":
-                                st.session_state.web_search_enabled = True
+        with st.expander("Conversation History"):
+            with st.container(height=180):
+                if st.session_state.get("conversations"):
+                    titles = []
+                    for conv in st.session_state.conversations:
+                        if isinstance(conv, dict) and 'conversation_id' in conv:
+                            title = f'###### {conv["messages"][0]["content"][:70]}'
+                            if title in titles:
+                                title += "#2"
+                            else:
+                                titles.append(title)
+                            if st.button(title):
+                                st.session_state.conversations = get_conversations()
+                                st.session_state.conversation_id = conv["conversation_id"]
+                                st.session_state.messages = conv['messages']
+                                if conv["conversation_type"] == "web":
+                                    st.session_state.web_search_enabled = True
 
+        quiz_topic = st.text_input("Enter the topic of the quiz:")
         pdfs = st.file_uploader("Upload PDFs here", type=[
             "pdf"], accept_multiple_files=True)
         st.markdown("**or**")
         web_search_enabled = st.checkbox(
             "Enable Web Search", value=st.session_state.web_search_enabled)
 
+        st.text("")
+        st.text("")
         if st.button("Logout"):
             cookie_manager = get_manager()
             print(cookie_manager.get_all())
@@ -180,10 +183,18 @@ def show_quiz_generation():
             else:
                 st.write(content)
 
-    if prompt := st.chat_input("Enter your prompt"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.write(prompt)
+    prompt = st.chat_input("Enter your prompt")
+    if prompt:
+        if not quiz_topic:
+            st.error("Please enter the topic of the quiz")
+            return
+        else:
+            prompt = f"{prompt}\n\nTopic: {quiz_topic}"
+            prompt_display = prompt.split("Topic")[0]
+            st.session_state.messages.append(
+                {"role": "user", "content": prompt_display})
+            with st.chat_message("user"):
+                st.write(prompt_display)
 
     if st.session_state.messages[-1]["role"] != "assistant":
         with st.chat_message("assistant"):
