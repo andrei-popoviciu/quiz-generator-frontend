@@ -162,6 +162,7 @@ def show_quiz_generation():
             st.session_state.clear()
             cookie_manager = get_manager()
             cookie_manager.delete(COOKIE_NAME)
+            time.sleep(1)
             st.rerun()
 
     if "messages" not in st.session_state.keys():
