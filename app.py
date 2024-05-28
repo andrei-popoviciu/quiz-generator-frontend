@@ -71,6 +71,7 @@ def main():
         cookie_manager = get_manager()
         session_cookie = cookie_manager.get(COOKIE_NAME)
         time.sleep(2)
+        print(cookie_manager.get_all())
         if session_cookie:
             st.session_state.authenticated = True
             st.session_state[COOKIE_NAME] = session_cookie
