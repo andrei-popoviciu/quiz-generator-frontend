@@ -161,10 +161,9 @@ def show_quiz_generation():
             print(cookie_manager.get_all())
             try:
                 cookie_manager.delete(COOKIE_NAME)
-                st.session_state.clear()
             except Exception as e:
                 print(e)
-            st.rerun()
+            st.session_state.clear()
 
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [
