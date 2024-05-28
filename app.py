@@ -70,7 +70,7 @@ def main():
     if 'authenticated' not in st.session_state:
         cookie_manager = get_manager()
         session_cookie = cookie_manager.get(COOKIE_NAME)
-        time.sleep(0.5)
+        time.sleep(2)
         if session_cookie:
             st.session_state.authenticated = True
             st.session_state[COOKIE_NAME] = session_cookie
