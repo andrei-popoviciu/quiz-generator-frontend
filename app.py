@@ -159,9 +159,9 @@ def show_quiz_generation():
             "Enable Web Search", value=st.session_state.web_search_enabled)
 
         if st.button("Logout"):
+            st.session_state.clear()
             cookie_manager = get_manager()
             cookie_manager.delete(COOKIE_NAME)
-            st.session_state.clear()
             st.rerun()
 
     if "messages" not in st.session_state.keys():
