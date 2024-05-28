@@ -25,8 +25,6 @@ def login_user(username, password):
     response = requests.post(
         f"{API_URL}/login", json={"username": username, "password": password})
     cookie_value = None
-    print(f"Response status code: {response.status_code}")
-    print(f"Response content: {response.content}")
 
     if response.status_code == 200:
         cookie_value = response.headers["Set-Cookie"].split(";")[
@@ -161,8 +159,10 @@ def show_quiz_generation():
         if st.button("Logout"):
             st.session_state.clear()
             cookie_manager = get_manager()
-            cookie_manager.delete(COOKIE_NAME)
-            time.sleep(1)
+            try:
+                cookie_manager.delete(COOKIE_NAME)
+            except:
+                pass
             st.rerun()
 
     if "messages" not in st.session_state.keys():
