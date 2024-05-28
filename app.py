@@ -153,12 +153,16 @@ def show_quiz_generation():
                                 st.session_state.web_search_enabled = True
 
         st.text("")
-        st.text('Generate Quizzes')
         pdfs = st.file_uploader("Upload PDFs here", type=[
             "pdf"], accept_multiple_files=True)
         st.markdown("**or**")
         web_search_enabled = st.checkbox(
             "Enable Web Search", value=st.session_state.web_search_enabled)
+
+        if st.button("Logout"):
+            cookie_manager = get_manager()
+            cookie_manager.delete(COOKIE_NAME)
+            st.session_state.clear()
 
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [
